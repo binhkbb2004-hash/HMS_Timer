@@ -5,13 +5,14 @@ module tb_reset_sync();
     reg  rstn;
     wire rstn_sync;
 
+    // DUT
     reset_sync dut (
         .clk(clk),
         .rstn(rstn),
         .rstn_sync(rstn_sync)
     );
 
-    // Tạo xung nhịp clk 1MHz (Chu kỳ = 1000ns -> Bật/tắt mỗi 500ns)
+    // Clock (1 MHz -> clock cycle 1000ns)
     initial begin
         clk = 0;
         forever begin

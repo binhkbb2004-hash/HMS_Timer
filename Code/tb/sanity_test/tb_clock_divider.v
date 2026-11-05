@@ -1,9 +1,17 @@
 `timescale 1ns / 1ps
 module tb_clock_divider();
     reg  clk;
-    reg  rstn_sync;
+    reg  rstn;
     wire pulse_1ms;
     wire pulse_1s;
+
+    wire rstn_sync;
+
+    reset_sync u_reset_sync(
+        .clk(clk),
+        .rstn(rstn),
+        .rstn_sync(rstn_sync)
+    );
 
     clock_divider dut (
         .clk(clk),
@@ -17,20 +25,22 @@ module tb_clock_divider();
         forever #500 clk = ~ clk;
     end
 
-    time t_ms1, t_ms2;       // Lưu thời điểm xuất hiện pulse_1ms
-    integer ms_pulse_cnt;    // đếm số lượng xung pulse_1ms
+    time t_ms1, t_ms2; // Lưu thời điểm xuất hiện pulse_1ms
+    integer ms_pulse_cnt; // đếm số lượng xung pulse_1ms
 
     always @(posedge pulse_1ms) begin
         if (rstn_sync) ms_pulse_cnt = ms_pulse_cnt + 1;
     end
 
     initial begin
-        rstn_sync = 0;
+        rstn = 0;
         ms_pulse_cnt = 0;
 
         $display(" --- START --- ");
         
-        #1500 rstn_sync = 1;
+        #1500 rstn = 1;
+        @(posedge rstn_sync);
+        #5;
 
         // TESTCASE 1: Kiểm tra khoảng cách giữa 2 xung pulse_1ms
         @(posedge pulse_1ms); 
@@ -53,6 +63,9 @@ module tb_clock_divider();
         end else begin
             $display("[FAIL] Testcase 2: So xung 1ms da dem duoc: %0d (Ky vong: 1000)", ms_pulse_cnt);
         end
+        
+        $display(" --- END --- ");
+
         #10000;
         $stop;
     end

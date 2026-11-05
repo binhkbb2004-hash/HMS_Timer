@@ -1,8 +1,10 @@
 // =========================================================================
-// Verison 08//10/26
+// File: rtl/hms_timer.v
 // =========================================================================
 
-module hms_timer (
+module hms_timer #(
+    parameter CLK_FREQ_HZ = 1_000_000
+)(
     input wire clk,        
     input wire rstn,       
     input wire sel_in,     
@@ -10,26 +12,28 @@ module hms_timer (
     input wire down_in,     
     output wire [4:0] h_out, 
     output wire [5:0] m_out, 
-    output wire [5:0] s_out  
+    output wire [5:0] s_out,
+    output wire [1:0] adj_fld_o
 );
 
-    // Wire từ khối reset_sync
     wire w_rstn_sync;
-
-    // Wire từ khối clock_divider
     wire w_pulse_1ms;
     wire w_pulse_1s;
-
-    // Wire từ khối button_processor
     wire w_sel_tick;
     wire w_up_tick;
     wire w_down_tick;
-
-    // Wire từ khối control_fsm
     wire w_pause_cnt;
     wire w_set_h;
     wire w_set_m;
     wire w_set_s;
+
+    // Mã hóa trường đang chỉnh cho de2_70_top:
+    // 00: NORMAL, 01: SET_S (giây), 10: SET_M (phút), 11: SET_H (giờ)
+    // coverage off
+    assign adj_fld_o = w_set_h ? 2'b11 :
+                       w_set_m ? 2'b10 :
+                       w_set_s ? 2'b01 : 2'b00;
+    // coverage on
 
     reset_sync u_reset_sync (
         .clk (clk),
@@ -37,7 +41,9 @@ module hms_timer (
         .rstn_sync (w_rstn_sync)
     );
 
-    clock_divider u_clock_divider (
+    clock_divider #(
+        .CLK_FREQ_HZ (CLK_FREQ_HZ)
+    ) u_clock_divider (
         .clk (clk),
         .rstn_sync (w_rstn_sync),
         .pulse_1ms (w_pulse_1ms),

@@ -1,5 +1,5 @@
 // =========================================================================
-// Verison 07//10/26
+// Verison 31//10/26
 // =========================================================================
  
 module control_fsm (
@@ -54,7 +54,7 @@ module control_fsm (
         end
     end
 
-    assign timeout = (wdog_cnt == 13'd4999); // Cờ timeout bật khi đếm đủ 5 giây
+    assign timeout = (wdog_cnt == 13'd4999) & pulse_1ms;
 
     // --- FSM State Memory ---
     always @(posedge clk or negedge rstn_sync) begin
@@ -98,7 +98,7 @@ module control_fsm (
             
             SET_S: begin
                 if (timeout) begin      
-                    state_next = NORMAL;
+                    next_state = NORMAL;
                 end else if (sel_tick) begin
                     next_state = NORMAL;
                 end else begin
@@ -106,7 +106,9 @@ module control_fsm (
                 end
             end
             
+            // coverage off
             default: next_state = NORMAL;
+            // coverage on
         endcase
     end
 
@@ -137,12 +139,15 @@ module control_fsm (
                 set_m = 1'b0;
                 set_s = 1'b1;
             end
+            
+            // coverage off
             default: begin
                 pause_cnt = 1'b0;
                 set_h = 1'b0;
                 set_m = 1'b0;
                 set_s = 1'b0;
             end
+            // coverage on
         endcase
     end
 endmodule

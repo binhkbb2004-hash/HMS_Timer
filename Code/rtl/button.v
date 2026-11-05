@@ -1,5 +1,5 @@
 // =========================================================================
-// Verison 07//10/26
+// Verison 31//10/26
 // =========================================================================
  
 module button (
@@ -11,14 +11,15 @@ module button (
 );
 
     // --- Tầng 1: Khử Metastability ---
-    reg ff1, btn_sync;
+    reg btn_meta;
+    reg btn_sync;
     always @(posedge clk or negedge rstn_sync) begin
         if (!rstn_sync) begin
-            ff1 <= 1'b0;
+            btn_meta <= 1'b0;
             btn_sync <= 1'b0;
         end else begin
-            ff1 <= btn_in;
-            btn_sync <= ff1;
+            btn_meta <= btn_in;
+            btn_sync <= btn_meta;
         end
     end
 
@@ -31,21 +32,17 @@ module button (
             debounce_cnt <= 5'd0;
             btn_clean <= 1'b0;
         end else begin
-            if (pulse_1ms) begin
-                if (btn_sync == btn_clean) begin
-                    // Nếu giống trạng thái cũ -> Xóa bộ đếm
+            if (btn_sync == btn_clean) begin
+                // [1MHz Domain]: Nếu giống trạng thái cũ -> Xóa bộ đếm
+                debounce_cnt <= 5'd0;
+            end else if (pulse_1ms) begin
+                // [1kHz Domain] Chỉ xét tăng hoặc chốt kết quả khi có nhịp 1ms
+                if (debounce_cnt == 5'd19) begin
+                    btn_clean <= btn_sync; 
                     debounce_cnt <= 5'd0;
                 end else begin
-                    // Nếu phát hiện trạng thái khác -> Bắt đầu đếm
-                    if (debounce_cnt == 5'd19) begin
-                        btn_clean <= btn_sync;  // Cập nhật trạng thái khi đủ 20ms
-                        debounce_cnt <= 5'd0;
-                    end else begin
-                        debounce_cnt <= debounce_cnt + 1'b1;
-                    end
+                    debounce_cnt <= debounce_cnt + 1'b1;
                 end
-            end else begin
-                debounce_cnt <= debounce_cnt;
             end
         end
     end

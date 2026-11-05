@@ -1,0 +1,7 @@
+# Quartus II project file
+QUARTUS_VERSION = "13.0"
+DATE = "00:00:00  October 30, 2026"
+
+# Revisions
+
+PROJECT_REVISION = "hms_fpga"

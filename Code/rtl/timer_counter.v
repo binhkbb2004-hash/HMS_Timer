@@ -32,7 +32,7 @@ module timer_counter (
                         s_out <= s_out + 1'b1;
                     end
                 end
-            end else if (set_s && pause_cnt) begin
+            end else if (set_s) begin
                 // CHẾ ĐỘ CÀI ĐẶT: Chạy theo thao tác nút nhấn
                 if (up_tick) begin
                     if (s_out == 6'd59) begin 
@@ -43,7 +43,7 @@ module timer_counter (
                 end else if (down_tick) begin
                     if (s_out == 6'd0) begin 
                         s_out <= 6'd59;
-                    end else begin               
+                    end else begin
                         s_out <= s_out - 1'b1;
                     end
                 end else begin
@@ -64,11 +64,11 @@ module timer_counter (
                 if (pulse_1s && (s_out == 6'd59)) begin
                     if (m_out == 6'd59) begin 
                         m_out <= 6'd0;
-                    end else begin                
+                    end else begin
                         m_out <= m_out + 1'b1;
                     end
                 end
-            end else if (set_m && pause_cnt) begin
+            end else if (set_m) begin
                 // CHẾ ĐỘ CÀI ĐẶT: Ngắt liên kết với s_out
                 if (up_tick) begin
                     if (m_out == 6'd59) begin 
@@ -79,7 +79,7 @@ module timer_counter (
                 end else if (down_tick) begin
                     if (m_out == 6'd0) begin 
                         m_out <= 6'd59;
-                    end else begin                
+                    end else begin           
                         m_out <= m_out - 1'b1;
                     end
                 end else begin
@@ -104,7 +104,7 @@ module timer_counter (
                         h_out <= h_out + 1'b1;
                     end
                 end
-            end else if (set_h && pause_cnt) begin
+            end else if (set_h) begin
                 // CHẾ ĐỘ CÀI ĐẶT: Ngắt liên kết với phút và giây
                 if (up_tick) begin
                     if (h_out == 5'd23) begin
@@ -124,5 +124,4 @@ module timer_counter (
             end
         end
     end
-
 endmodule

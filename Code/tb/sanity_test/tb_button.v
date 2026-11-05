@@ -1,54 +1,58 @@
 `timescale 1ns / 1ps
 module tb_button();
     reg  clk;
-    reg  rstn_sync;
-    reg  pulse_1ms;
+    reg  rstn;
     reg  btn_in;
+    
+    wire rstn_sync;
+    wire pulse_1ms;
+    wire pulse_1s; 
     wire btn_tick;
+
+    // DUT
+    reset_sync u_reset_sync(
+        .clk(clk),
+        .rstn(rstn),
+        .rstn_sync(rstn_sync)
+    );
+
+    clock_divider u_clock_divider (
+        .clk(clk),
+        .rstn_sync(rstn_sync),
+        .pulse_1ms(pulse_1ms),
+        .pulse_1s(pulse_1s)
+    );
 
     button dut (
         .clk(clk),
         .rstn_sync(rstn_sync),
-        .pulse_1ms(pulse_1ms),
+        .pulse_1ms(pulse_1ms), 
         .btn_in(btn_in),
         .btn_tick(btn_tick)
     );
 
+    integer tick_cnt;
+
+    // Clock 1MHz
     initial begin
         clk = 0;
-        forever #500 clk = ~clk;
+        forever #500 clk = ~ clk;
     end
-
-    reg [9:0] cnt_1ms;
-    always @(posedge clk or negedge rstn_sync) begin
-        if (!rstn_sync) begin
-            cnt_1ms <= 0;
-            pulse_1ms <= 0;
-        end else begin
-            if (cnt_1ms == 999) begin
-                cnt_1ms <= 0;
-                pulse_1ms <= 1;
-            end else begin
-                cnt_1ms <= cnt_1ms + 1;
-                pulse_1ms <= 0;
-            end
-        end
-    end
-
-    integer tick_cnt;
 
     always @(posedge clk) begin
         if (btn_tick) tick_cnt = tick_cnt + 1;
     end
 
     initial begin
-        rstn_sync = 0; 
+        rstn = 0; 
         btn_in = 0;
         tick_cnt = 0;
 
         $display(" --- START --- ");
 
-        #1500 rstn_sync = 1;
+        #1500 rstn = 1;
+        @(posedge rstn_sync);
+        #5;
 
         // TESTCASE 1: tín hiệu in ổn định < 20ms 
         $display ("TESTCASE 1: tin hieu in on dinh < 20ms");
@@ -100,6 +104,9 @@ module tb_button();
         end else begin
             $display("  -> [FAIL] Sinh ra %0d tick khi nha phim.", tick_cnt);
         end
+
+        $display(" --- END --- ");
+        
         #10000;
         $stop;
     end
